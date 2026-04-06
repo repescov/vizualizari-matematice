@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pătratul numerelor în 5 - Vizual</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --main-color: #2b5d8d; /* Blue */
+            --accent-color: #008080; /* Teal */
+            --highlight-color: #ffff00; /* Yellow */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container { text-align: center; width: 95%; max-width: 900px; padding: 20px; }
+
+        .inputs {
+            display: flex; gap: 20px; justify-content: center; margin-bottom: 30px;
+            background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px;
+        }
+
+        .input-group { display: flex; flex-direction: column; align-items: center; }
+        input {
+            background: #222; border: 2px solid #444; color: white; padding: 10px;
+            border-radius: 8px; width: 100px; text-align: center; font-size: 1.5em;
+        }
+
+        .viz-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-around;
+            align-items: center;
+            gap: 40px;
+            margin-top: 20px;
+        }
+
+        svg {
+            filter: drop-shadow(0 0 15px rgba(0,0,0,0.5));
+            background: rgba(255,255,255,0.02);
+            border-radius: 10px;
+            padding: 10px;
+        }
+
+        .explanation {
+            flex: 1;
+            min-width: 300px;
+            text-align: left;
+            font-size: 1.2em;
+            line-height: 1.6;
+        }
+
+        .math-step {
+            margin-bottom: 15px;
+            padding-left: 15px;
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .result-box {
+            font-size: 2em;
+            font-weight: bold;
+            color: var(--highlight-color);
+            margin-top: 20px;
+            padding: 15px;
+            border: 2px dashed var(--highlight-color);
+            display: inline-block;
+        }
+
+        .n-color { color: var(--main-color); font-weight: bold; }
+        .n1-color { color: var(--accent-color); font-weight: bold; }
+        .const-25 { color: var(--highlight-color); font-weight: bold; }
+
+        a.back-btn {
+            position: absolute; top: 20px; left: 20px; color: #888; text-decoration: none; font-size: 0.9em;
+        }
+        a.back-btn:hover { color: white; }
+
+        @media (max-width: 600px) {
+            .viz-container { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+<a href="index.html" class="back-btn">← Înapoi la Portofoliu</a>
+
+<div class="container">
+    <h1>Pătratul numerelor care se termină în 5</h1>
+    
+    <div class="inputs">
+        <div class="input-group">
+            <label>Numărul (ex: 35, 75)</label>
+            <input type="number" id="inputNum" value="35" step="10" min="5" max="95">
+        </div>
+    </div>
+
+    <div class="viz-container">
+        <!-- Vizualizarea Geometrică -->
+        <svg id="geoSvg" width="400" height="400" viewBox="0 0 400 400">
+            <!-- Pătratul principal 10n x 10n -->
+            <rect id="sq_main" x="50" y="50" fill="var(--main-color)" fill-opacity="0.6" stroke="var(--main-color)" stroke-width="2" />
+            <!-- Dreptunghiul lateral 10n x 5 -->
+            <rect id="rect_right" fill="var(--accent-color)" fill-opacity="0.6" stroke="var(--accent-color)" stroke-width="2" />
+            <!-- Dreptunghiul de jos 5 x 10n -->
+            <rect id="rect_bottom" fill="var(--accent-color)" fill-opacity="0.6" stroke="var(--accent-color)" stroke-width="2" />
+            <!-- Pătratul mic 5x5 -->
+            <rect id="sq_small" width="40" height="40" fill="var(--highlight-color)" fill-opacity="0.8" stroke="var(--highlight-color)" stroke-width="2" />
+            
+            <!-- Label-uri -->
+            <text id="label_n" fill="white" font-size="20" text-anchor="middle"></text>
+            <text id="label_5" fill="white" font-size="20" text-anchor="middle">5</text>
+        </svg>
+
+        <!-- Explicația Algebrică -->
+        <div class="explanation">
+            <div class="math-step">
+                Numărul este de forma <span class="n-color" id="val_n_txt">3</span><span class="const-25">5</span>.
+            </div>
+            <div class="math-step">
+                Pas 1: Înmulțim <span class="n-color" id="n_step1">3</span> cu succesorul său (<span class="n1-color" id="n1_step1">4</span>).
+                <br>
+                <span class="n-color" id="n_calc">3</span> × <span class="n1-color" id="n1_calc">4</span> = <strong id="res_prefix">12</strong>
+            </div>
+            <div class="math-step">
+                Pas 2: Adăugăm <span class="const-25">25</span> la finalul rezultatului.
+            </div>
+            <div class="result-box" id="final_res">
+                35² = 1225
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const inputNum = document.getElementById('inputNum');
+    const sq_main = document.getElementById('sq_main');
+    const rect_right = document.getElementById('rect_right');
+    const rect_bottom = document.getElementById('rect_bottom');
+    const sq_small = document.getElementById('sq_small');
+    const label_n = document.getElementById('label_n');
+    const label_5 = document.getElementById('label_5');
+
+    function update() {
+        let val = parseInt(inputNum.value) || 5;
+        // Forțăm terminarea în 5
+        if (val % 10 !== 5) {
+            val = Math.floor(val / 10) * 10 + 5;
+        }
+        if (val < 5) val = 5;
+        if (val > 155) val = 155; // Limită vizuală
+
+        const n = Math.floor(val / 10);
+        const nextN = n + 1;
+        const result = val * val;
+
+        // Dimensiuni SVG (scalăm n pentru vizualizare)
+        const scale = 300 / ( (n||1) * 10 + 5 ); 
+        const dimN = (n * 10) * scale;
+        const dim5 = 5 * scale;
+
+        // Update Rectangles
+        sq_main.setAttribute('width', dimN);
+        sq_main.setAttribute('height', dimN);
+        
+        rect_right.setAttribute('x', 50 + dimN);
+        rect_right.setAttribute('y', 50);
+        rect_right.setAttribute('width', dim5);
+        rect_right.setAttribute('height', dimN);
+
+        rect_bottom.setAttribute('x', 50);
+        rect_bottom.setAttribute('y', 50 + dimN);
+        rect_bottom.setAttribute('width', dimN);
+        rect_bottom.setAttribute('height', dim5);
+
+        sq_small.setAttribute('x', 50 + dimN);
+        sq_small.setAttribute('y', 50 + dimN);
+        sq_small.setAttribute('width', dim5);
+        sq_small.setAttribute('height', dim5);
+
+        // Labels
+        label_n.innerText = n > 0 ? (10 * n) : "";
+        label_n.setAttribute('x', 50 + dimN/2);
+        label_n.setAttribute('y', 40);
+
+        label_5.setAttribute('x', 50 + dimN + dim5/2);
+        label_5.setAttribute('y', 40);
+
+        // Text Explanations
+        document.getElementById('val_n_txt').innerText = n;
+        document.getElementById('n_step1').innerText = n;
+        document.getElementById('n1_step1').innerText = nextN;
+        document.getElementById('n_calc').innerText = n;
+        document.getElementById('n1_calc').innerText = nextN;
+        document.getElementById('res_prefix').innerText = n * nextN;
+        document.getElementById('final_res').innerHTML = `${val}² = <span style="color:white">${n * nextN}</span><span class="const-25">25</span>`;
+    }
+
+    inputNum.addEventListener('input', update);
+    update();
+</script>
+
+</body>
+</html>
