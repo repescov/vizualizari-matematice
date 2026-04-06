@@ -33,11 +33,19 @@
             background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px;
         }
 
-        .input-group { display: flex; flex-direction: column; align-items: center; }
-        input {
+        .input-group { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+        input[type="number"] {
             background: #222; border: 2px solid #444; color: white; padding: 10px;
             border-radius: 8px; width: 80px; text-align: center; font-size: 1.2em;
         }
+
+        input[type="range"] {
+            width: 150px;
+            cursor: pointer;
+            accent-color: var(--rect1-color);
+        }
+
+        #sliderB { accent-color: var(--rect2-color); }
 
         .viz-wrapper {
             display: flex;
@@ -112,10 +120,12 @@
         <div class="input-group">
             <label>Numărul A</label>
             <input type="number" id="inputA" value="37" min="1" max="100">
+            <input type="range" id="sliderA" value="37" min="1" max="100">
         </div>
         <div class="input-group">
             <label>Numărul B</label>
             <input type="number" id="inputB" value="19" min="1" max="100">
+            <input type="range" id="sliderB" value="19" min="1" max="100">
         </div>
     </div>
 
@@ -157,11 +167,21 @@
 <script>
     const inputA = document.getElementById('inputA');
     const inputB = document.getElementById('inputB');
+    const sliderA = document.getElementById('sliderA');
+    const sliderB = document.getElementById('sliderB');
     const helperLine = document.getElementById('helperLine');
     const resultLabel = document.getElementById('resultLabel');
     const MAX_H = 300;
 
-    function update() {
+    function update(e) {
+        // Sincronizare glisor -> input și invers
+        if (e) {
+            if (e.target === inputA) sliderA.value = inputA.value;
+            if (e.target === sliderA) inputA.value = sliderA.value;
+            if (e.target === inputB) sliderB.value = inputB.value;
+            if (e.target === sliderB) inputB.value = sliderB.value;
+        }
+
         let A = parseFloat(inputA.value) || 0;
         let B = parseFloat(inputB.value) || 0;
         if (A > 100) A = 100; if (B > 100) B = 100;
@@ -204,18 +224,6 @@
     inputB.addEventListener('input', update);
     sliderA.addEventListener('input', update);
     sliderB.addEventListener('input', update);
-    update();
-</script>
-
-</body>
-</html>
-st baseOffset = 46; // Offset pentru a se alinia cu baza coloanelor
-        helperLine.style.bottom = (fill_h + baseOffset) + "px";
-        resultLabel.style.bottom = (fill_h + baseOffset - 25) + "px"; // "Așezat" pe linie
-    }
-
-    inputA.addEventListener('input', update);
-    inputB.addEventListener('input', update);
     update();
 </script>
 
