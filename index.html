@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matematică Vizuală - Portofoliu</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 50px 20px;
+            margin: 0;
+        }
+
+        h1 { font-weight: 300; color: #008080; margin-bottom: 10px; }
+        p { color: #888; margin-bottom: 40px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .card {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 15px;
+            padding: 25px;
+            text-decoration: none;
+            color: white;
+            transition: transform 0.3s, border-color 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #008080;
+            background: #252525;
+        }
+
+        .card h3 { margin: 0 0 10px 0; color: #008080; }
+        .card p { font-size: 0.9em; margin-bottom: 20px; color: #bbb; }
+
+        .badge {
+            font-size: 0.7em;
+            background: #333;
+            padding: 4px 8px;
+            border-radius: 5px;
+            align-self: flex-start;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Matematică Vizuală</h1>
+    <p>Experimente interactive și demonstrații geometrice</p>
+
+    <div class="grid">
+        <!-- Proiectul 1: Procente -->
+        <a href="procente.html" class="card">
+            <div>
+                <span class="badge">Interactiv</span>
+                <h3>Procente Vizual</h3>
+                <p>Demonstrație pentru proprietatea comutativă: A% din B = B% din A.</p>
+            </div>
+            <div style="color: #008080; font-weight: bold;">Vezi Experimentul →</div>
+        </a>
+
+        <!-- Proiectul 2: Placeholder pentru Fracții -->
+        <a href="#" class="card" style="opacity: 0.5; pointer-events: none;">
+            <div>
+                <span class="badge">În lucru</span>
+                <h3>Adunarea Fracțiilor</h3>
+                <p>Vizualizarea numitorului comun prin arii geometrice.</p>
+            </div>
+            <div>În curând...</div>
+        </a>
+
+        <!-- Proiectul 3: Placeholder pentru Pătrat -->
+        <a href="#" class="card" style="opacity: 0.5; pointer-events: none;">
+            <div>
+                <span class="badge">În lucru</span>
+                <h3>Pătratul numerelor în 5</h3>
+                <p>Explicația geometrică a trucului de calcul rapid.</p>
+            </div>
+            <div>În curând...</div>
+        </a>
+    </div>
+
+    <footer style="margin-top: 80px; color: #444; font-size: 0.8em;">
+        &copy; 2026 - Creat cu pasiune pentru educație
+    </footer>
+
+</body>
+</html>
