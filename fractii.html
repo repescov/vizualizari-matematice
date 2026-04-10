@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adunarea Fracțiilor Vizual</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --blue: #3498db;
+            --orange: #e67e22;
+            --green: #2ecc71;
+            --gray: #444;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding-bottom: 50px;
+        }
+
+        .tabs {
+            display: flex; gap: 10px; margin: 20px 0;
+            background: #222; padding: 10px; border-radius: 12px;
+        }
+
+        .tab {
+            padding: 10px 20px; cursor: pointer; border-radius: 8px;
+            transition: 0.3s; border: 1px solid transparent; font-weight: bold;
+        }
+        .tab:hover { background: #333; }
+        .tab.active { background: var(--blue); color: white; }
+
+        .container { width: 90%; max-width: 900px; text-align: center; }
+
+        .controls {
+            background: rgba(255,255,255,0.05);
+            padding: 20px; border-radius: 15px; margin-bottom: 30px;
+            display: flex; flex-wrap: wrap; justify-content: center; gap: 20px;
+        }
+
+        .input-group { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        input[type="range"] { width: 140px; accent-color: var(--blue); }
+        .val-display { font-size: 1.2em; font-weight: bold; color: var(--blue); }
+
+        .viz-area { display: flex; flex-direction: column; align-items: center; gap: 40px; }
+        .squares-row { display: flex; justify-content: space-around; width: 100%; gap: 20px; }
+        .square-container { position: relative; width: 250px; height: 250px; }
+
+        .main-square {
+            width: 100%; height: 100%; border: 3px solid #666;
+            position: relative; background: rgba(255,255,255,0.02);
+            overflow: visible;
+        }
+
+        .grid-line {
+            position: absolute; background: #888; z-index: 10;
+            pointer-events: none; transition: opacity 0.5s ease;
+        }
+        .grid-line.extra { opacity: 0; background: var(--green); }
+        .grid-line.show { opacity: 1; }
+
+        .piece {
+            position: absolute;
+            transition: transform 1.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+            opacity: 0.8; border: 0px solid rgba(0,0,0,0.3); z-index: 5;
+        }
+        .piece.divided { border-width: 1px; }
+        .piece.hidden { opacity: 0; pointer-events: none; }
+        .piece.fade-out { opacity: 0 !important; transition: opacity 0.3s !important; }
+
+        .btn-group {
+            display: flex; flex-direction: column; gap: 10px; align-items: center;
+            border-left: 1px solid #333; padding-left: 20px;
+        }
+
+        .btn {
+            color: white; border: none; padding: 10px 20px; border-radius: 8px;
+            font-size: 1em; font-weight: bold; cursor: pointer; transition: 0.3s; width: 120px;
+        }
+        .btn-div { background: var(--blue); }
+        .btn-add { background: var(--green); }
+        .btn-reset { background: var(--gray); color: #ccc; }
+        .btn:disabled { background: #333; cursor: not-allowed; opacity: 0.5; }
+        .btn:hover:not(:disabled) { transform: scale(1.05); filter: brightness(1.1); }
+
+        .formula {
+            font-size: 2.2em; margin: 20px 0; font-family: 'Cambria Math', serif;
+            min-height: 1.6em; display: flex; align-items: center; justify-content: center; gap: 10px;
+            position: relative;
+        }
+        .formula-sum { display: flex; align-items: center; }
+        .formula-res { display: flex; align-items: center; opacity: 0; transition: opacity 0.5s; }
+        .formula-res.show { opacity: 1; }
+
+        .description { color: #aaa; max-width: 600px; margin: 0 auto 20px; line-height: 1.5; }
+
+        .fraction-ui {
+            display: inline-flex; flex-direction: column; vertical-align: middle;
+            align-items: center; margin: 0 5px;
+        }
+        .fraction-ui span:first-child { border-bottom: 2px solid white; padding: 0 5px; }
+
+        a.back-btn { position: absolute; top: 20px; left: 20px; color: #888; text-decoration: none; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<a href="index.html" class="back-btn">← Înapoi la Portofoliu</a>
+
+<div class="container">
+    <h1>Adunarea Fracțiilor Vizual</h1>
+    <div class="tabs">
+        <div class="tab active" onclick="setTab(1)">1. Același numitor</div>
+        <div class="tab" onclick="setTab(2)">2. Numitori înrudiți</div>
+        <div class="tab" onclick="setTab(3)">3. Metoda universală</div>
+        <div class="tab" onclick="setTab(4)">4. CMMMC</div>
+    </div>
+    <p id="levelDesc" class="description"></p>
+    <div class="controls" id="controls"></div>
+    <div class="formula" id="formula"></div>
+    <div class="viz-area">
+        <div class="squares-row">
+            <div class="square-container">
+                <div id="sqA" class="main-square"></div>
+                <div style="margin-top: 10px;">Fracția A</div>
+            </div>
+            <div class="square-container">
+                <div id="sqB" class="main-square"></div>
+                <div style="margin-top: 10px;">Fracția B</div>
+            </div>
+        </div>
+        <div class="square-container">
+            <div id="sqRes" class="main-square" style="border-color: var(--green);"></div>
+            <div style="margin-top: 10px; font-weight: bold; color: var(--green);">Rezultat</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentTab = 1;
+    let state = { n1: 1, d1: 5, n2: 2, d2: 5, k: 2, step: 0 };
+
+    function setTab(n) {
+        currentTab = n;
+        document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i+1 === n));
+        resetStep();
+        renderControls();
+    }
+
+    function resetStep() {
+        state.step = 0;
+        if(currentTab === 1) { state.d1 = 5; state.d2 = 5; state.n1 = 1; state.n2 = 2; }
+        if(currentTab === 2) { state.d1 = 2; state.k = 2; state.d2 = 4; state.n1 = 1; state.n2 = 1; }
+        if(currentTab === 3) { state.d1 = 2; state.d2 = 3; state.n1 = 1; state.n2 = 1; }
+        if(currentTab === 4) { state.d1 = 4; state.d2 = 6; state.n1 = 1; state.n2 = 1; }
+        updateViz();
+    }
+
+    function onSliderChange() { state.step = 0; updateViz(); }
+
+    function renderControls() {
+        const ctrl = document.getElementById('controls');
+        const desc = document.getElementById('levelDesc');
+        let inner = '';
+        if (currentTab === 1) {
+            desc.innerText = "Când numitorii sunt identici, pur și simplu adunăm părțile.";
+            inner = `<div class="input-group"><label>Numitor</label><input type="range" min="2" max="10" value="${state.d1}" oninput="state.d1=state.d2=parseInt(this.value); this.nextElementSibling.innerText=this.value; onSliderChange()"><span class="val-display">${state.d1}</span></div><div class="input-group"><label>Părți A</label><input type="range" min="1" max="${state.d1-1}" value="${state.n1}" oninput="state.n1=parseInt(this.value); this.nextElementSibling.innerText=this.value; onSliderChange()"><span class="val-display">${state.n1}</span></div><div class="input-group"><label>Părți B</label><input type="range" min="1" max="${state.d1-state.n1}" value="${state.n2}" oninput="state.n2=parseInt(this.value); this.nextElementSibling.innerText=this.value; onSliderChange()"><span class="val-display">${state.n2}</span></div>`;
+        } else if (currentTab === 2) {
+            desc.innerText = "Numitori înrudiți: amplificăm o fracție pentru a ajunge la numitorul celeilalte.";
+            inner = `<div class="input-group"><label>Numitor A</label><input type="range" min="2" max="5" value="${state.d1}" oninput="state.d1=parseInt(this.value); state.d2=state.d1*state.k; this.nextElementSibling.innerText=this.value; onSliderChange()"><span class="val-display">${state.d1}</span></div><div class="input-group"><label>Multiplicator (k)</label><input type="range" min="2" max="4" value="${state.k}" oninput="state.k=parseInt(this.value); state.d2=state.d1*state.k; this.nextElementSibling.innerText='x'+this.value; onSliderChange()"><span class="val-display">x${state.k}</span></div><div class="input-group"><label>Numitor B</label><span id="valD2" class="val-display" style="color:var(--orange)">${state.d1 * state.k}</span></div>`;
+        } else if (currentTab === 3) {
+            desc.innerText = "Metoda universală: Împărțim pătratele opus (Vertical vs Orizontal).";
+            inner = `<div class="input-group"><label>Numitor A</label><input type="range" min="2" max="6" value="${state.d1}" oninput="state.d1=parseInt(this.value); this.nextElementSibling.innerText=this.value; onSliderChange()"><span class="val-display">${state.d1}</span></div><div class="input-group"><label>Numitor B</label><input type="range" min="2" max="6" value="${state.d2}" oninput="state.d2=parseInt(this.value); this.nextElementSibling.innerText=this.value; onSliderChange()"><span class="val-display">${state.d2}</span></div>`;
+        } else if (currentTab === 4) {
+            desc.innerText = "CMMMC: Divizare optimă prin cel mai mic multiplu comun.";
+            inner = `<div class="input-group"><label>Numitor A</label><input type="range" min="2" max="12" value="${state.d1}" oninput="state.d1=parseInt(this.value); this.nextElementSibling.innerText=this.value; onSliderChange()"><span class="val-display">${state.d1}</span></div><div class="input-group"><label>Numitor B</label><input type="range" min="2" max="12" value="${state.d2}" oninput="state.d2=parseInt(this.value); this.nextElementSibling.innerText=this.value; onSliderChange()"><span class="val-display">${state.d2}</span></div>`;
+        }
+        const canDiv = (currentTab > 1);
+        ctrl.innerHTML = inner + `<div class="btn-group">${canDiv ? `<button class="btn btn-div" onclick="doDivide()" ${state.step >= 1 ? 'disabled' : ''}>Divizează</button>` : ''}<button class="btn btn-add" ${canDiv && state.step < 1 || state.step === 2 ? 'disabled' : ''} onclick="doAdd()">Adună!</button><button class="btn btn-reset" onclick="resetStep()">Reset</button></div>`;
+    }
+
+    function doDivide() { state.step = 1; updateViz(); }
+    function doAdd() { state.step = 2; updateViz(); animateAddition(); }
+
+    function updateViz() {
+        renderControls();
+        const formula = document.getElementById('formula');
+        const labelD2 = document.getElementById('valD2');
+        if (labelD2) labelD2.innerText = state.d1 * state.k;
+
+        let d1 = state.d1, d2 = state.d2, n1 = state.n1, n2 = state.n2;
+        let commonD = d1, fn1 = n1, fn2 = n2;
+
+        if (currentTab === 2) { commonD = d1 * state.k; fn1 = n1 * state.k; }
+        if (currentTab === 3) { commonD = d1 * d2; fn1 = n1 * d2; fn2 = n2 * d1; }
+        if (currentTab === 4) { commonD = getLCM(d1, d2); fn1 = n1 * (commonD/d1); fn2 = n2 * (commonD/d2); }
+
+        let sumHTML = (state.step === 0) ? formatFrac(n1, d1, 'var(--blue)') + " + " + formatFrac(n2, d2, 'var(--orange)') : formatFrac(fn1, commonD, 'var(--blue)') + " + " + formatFrac(fn2, commonD, 'var(--orange)');
+        formula.innerHTML = `<div class="formula-sum">${sumHTML}</div><div class="formula-res ${state.step === 2 ? 'show' : ''}"><span style="margin:0 10px;">=</span>${formatFrac(fn1+fn2, commonD, 'var(--green)')}</div>`;
+
+        drawSourceSquare('sqA', d1, n1, fn1, commonD, 'var(--blue)', 'v');
+        let bDiv = (currentTab === 2) ? d2 : commonD;
+        drawSourceSquare('sqB', d2, n2, fn2, bDiv, 'var(--orange)', (currentTab === 3 ? 'h' : 'v'));
+        drawResultSequential('sqRes', commonD, fn1, fn2, d1, d2);
+    }
+
+    function drawSourceSquare(id, dOrig, nOrig, nFinal, dFinal, color, dir) {
+        const el = document.getElementById(id); el.innerHTML = ''; const size = el.clientWidth;
+        for(let i=1; i<dOrig; i++) {
+            let l = document.createElement('div'); l.className='grid-line';
+            if(dir==='v'){ l.style.width='2px'; l.style.height='100%'; l.style.left=(i*size/dOrig-1)+'px'; }
+            else { l.style.height='2px'; l.style.width='100%'; l.style.top=(i*size/dOrig-1)+'px'; }
+            el.appendChild(l);
+        }
+        if (currentTab === 3 && state.step >= 1) {
+            if (id === 'sqA') {
+                let w = size/state.d1, h = size/state.d2;
+                for(let c=0; c<state.n1; c++) for(let r=0; r<state.d2; r++) { el.appendChild(createBasePiece(w, h, c*w, r*h, color)); }
+            } else {
+                let w = size/state.d1, h = size/state.d2;
+                for(let r=0; r<state.n2; r++) for(let c=0; c<state.d1; c++) { el.appendChild(createBasePiece(w, h, c*w, size-(r+1)*h, color)); }
+            }
+        } else {
+            for(let i=0; i<nFinal; i++) {
+                let p = document.createElement('div'); p.className='piece' + (state.step >= 1 ? ' divided' : '');
+                p.style.backgroundColor = color;
+                if(dir==='v'){ p.style.width=(size/dFinal)+'px'; p.style.height='100%'; p.style.left=(i*size/dFinal)+'px'; }
+                else { p.style.height=(size/dFinal)+'px'; p.style.width='100%'; p.style.top=(size-(i+1)*size/dFinal)+'px'; }
+                el.appendChild(p);
+            }
+        }
+        if (state.step >= 1) {
+            if (currentTab === 3) {
+                let otherD = (id==='sqA'?state.d2:state.d1);
+                for(let i=1; i<otherD; i++) {
+                    let l = document.createElement('div'); l.className='grid-line extra show';
+                    if(dir==='v'){ l.style.height='1px'; l.style.width='100%'; l.style.top=(i*size/otherD)+'px'; }
+                    else { l.style.width='1px'; l.style.height='100%'; l.style.left=(i*size/otherD)+'px'; }
+                    el.appendChild(l);
+                }
+            } else if (id === 'sqA' || currentTab !== 2) {
+                for(let i=1; i<dFinal; i++) {
+                    if (i % (dFinal/dOrig) === 0) continue;
+                    let l = document.createElement('div'); l.className='grid-line extra show';
+                    if(dir==='v'){ l.style.width='1px'; l.style.height='100%'; l.style.left=(i*size/dFinal)+'px'; }
+                    else { l.style.height='1px'; l.style.width='100%'; l.style.top=(i*size/dFinal)+'px'; }
+                    el.appendChild(l);
+                }
+            }
+        }
+    }
+
+    function drawResultSequential(id, commonD, fn1, fn2, d1, d2) {
+        const el = document.getElementById(id); el.innerHTML = ''; const size = el.clientWidth;
+        const resRect = el.getBoundingClientRect();
+        const sqA = document.getElementById('sqA'); const sqB = document.getElementById('sqB');
+        const offA = { x: sqA.getBoundingClientRect().left - resRect.left, y: sqA.getBoundingClientRect().top - resRect.top };
+        const offB = { x: sqB.getBoundingClientRect().left - resRect.left, y: sqB.getBoundingClientRect().top - resRect.top };
+
+        // Grid linii rezultat
+        let rows = (currentTab === 3) ? d2 : 1;
+        let cols = (currentTab === 3) ? d1 : commonD;
+        if (currentTab !== 3) {
+            for(let i=1; i<commonD; i++) { let l=document.createElement('div'); l.className='grid-line'; l.style.width='2px'; l.style.height='100%'; l.style.left=(i*size/commonD-1)+'px'; el.appendChild(l); }
+        } else {
+            for(let i=1; i<d1; i++) { let l=document.createElement('div'); l.className='grid-line'; l.style.width='2px'; l.style.height='100%'; l.style.left=(i*size/d1-1)+'px'; el.appendChild(l); }
+            for(let i=1; i<d2; i++) { let l=document.createElement('div'); l.className='grid-line'; l.style.height='2px'; l.style.width='100%'; l.style.top=(i*size/d2-1)+'px'; el.appendChild(l); }
+        }
+
+        // Sloturi pentru piese (umplem gridul secvențial)
+        let slots = [];
+        if (currentTab === 3) {
+            for(let c=0; c<d1; c++) for(let r=0; r<d2; r++) slots.push({x: c*size/d1, y: r*size/d2, w: size/d1, h: size/d2});
+        } else {
+            for(let i=0; i<commonD; i++) slots.push({x: i*size/commonD, y: 0, w: size/commonD, h: size});
+        }
+
+        // Fracția A
+        for(let i=0; i<fn1; i++) {
+            let s = slots[i];
+            let p = createPiece(s.w, s.h, s.x, s.y, 'var(--blue)');
+            p.dataset.source = 'A'; p.dataset.idx = i;
+            let sourceX = (currentTab === 3) ? (Math.floor(i/d2)*size/d1) : (i*size/commonD);
+            let sourceY = (currentTab === 3) ? ((i%d2)*size/d2) : 0;
+            applyAnim(p, offA.x + (sourceX - s.x), offA.y + (sourceY - s.y));
+            el.appendChild(p);
+        }
+
+        // Fracția B
+        for(let i=0; i<fn2; i++) {
+            let s = slots[fn1 + i];
+            let p = createPiece(s.w, s.h, s.x, s.y, 'var(--orange)');
+            p.dataset.source = 'B'; p.dataset.idx = i;
+            let sourceX, sourceY;
+            if (currentTab === 3) {
+                sourceX = (i % d1) * size / d1;
+                sourceY = size - (Math.floor(i/d1)+1) * (size/d2);
+            } else if (currentTab === 2) {
+                sourceX = i * (size/d2); // Square B nu e divizat în Cazul 2
+                sourceY = 0;
+            } else {
+                sourceX = i * (size/commonD);
+                sourceY = 0;
+            }
+            applyAnim(p, offB.x + (sourceX - s.x), offB.y + (sourceY - s.y));
+            el.appendChild(p);
+        }
+    }
+
+    function createBasePiece(w, h, x, y, color) {
+        let p = document.createElement('div'); p.className='piece divided'; p.style.backgroundColor = color; p.style.width = w+'px'; p.style.height = h+'px'; p.style.left = x+'px'; p.style.top = y+'px'; return p;
+    }
+
+    function createPiece(w, h, x, y, color) {
+        let p = document.createElement('div'); p.className='piece hidden divided'; p.style.width=w+'px'; p.style.height=h+'px'; p.style.left=x+'px'; p.style.top=y+'px'; p.style.backgroundColor=color; return p;
+    }
+
+    function applyAnim(p, x, y) { p.style.transform = `translate(${x}px, ${y}px)`; p.offsetHeight; }
+
+    function animateAddition() {
+        const resPieces = document.querySelectorAll('#sqRes .piece');
+        const sqAPieces = document.querySelectorAll('#sqA .piece');
+        const sqBPieces = document.querySelectorAll('#sqB .piece');
+        resPieces.forEach((p, i) => {
+            setTimeout(() => {
+                const sType = p.dataset.source; const sIdx = parseInt(p.dataset.idx);
+                if (sType === 'A' && sqAPieces[sIdx]) sqAPieces[sIdx].classList.add('fade-out');
+                if (sType === 'B' && sqBPieces[sIdx]) sqBPieces[sIdx].classList.add('fade-out');
+                p.classList.remove('hidden'); p.style.transform = 'translate(0, 0)';
+            }, i * 120);
+        });
+    }
+
+    function formatFrac(n, d, color) { return `<div class="fraction-ui" style="color:${color}"><span>${n}</span><span>${d}</span></div>`; }
+    function getLCM(a, b) { let min = (a > b) ? a : b; while (true) { if (min % a == 0 && min % b == 0) return min; min++; } }
+    setTab(1);
+</script>
+</body>
+</html>
