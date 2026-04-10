@@ -8,8 +8,8 @@ Un portofoliu de vizualizări matematice interactive și animații educaționale
 
 ### 1. Adunarea Fracțiilor (Ghid Vizual)
 O explicație în două părți care demonstrează procesul de adunare a fracțiilor cu numitori diferiți prin divizarea și rearanjarea geometrică a pieselor.
-*   **Partea 1:** Găsirea numitorului comun (Amplificarea). [🔗 Vizualizează pe YouTube](LINK_YOUTUBE_PART_1)
-*   **Partea 2:** Adunarea și Simplificarea (10/24 -> 5/12). [🔗 Vizualizează pe YouTube](LINK_YOUTUBE_PART_2)
+*   **Partea 1:** Găsirea numitorului comun (Amplificarea). [🔗 Vizualizează pe YouTube](https://youtube.com/shorts/TYZjn7obAxg)
+*   **Partea 2:** Adunarea și Simplificarea (10/24 -> 5/12). [🔗 Vizualizează pe YouTube](https://youtube.com/shorts/s0DPbKVs9LI)
 *   **Cod Sursă:** [adunare_fractii_vizual.py](scripts_manim/adunare_fractii_vizual.py)
 
 ### 2. Pătratul numerelor care se termină în 5
