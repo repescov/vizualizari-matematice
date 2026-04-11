@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Variație Preț - Interactiv</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --text-color: #ffffff;
+            --plus-color: #4CAF50;
+            --minus-color: #F44336;
+            --result-color: #FFEB3B;
+            --base-color: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container { text-align: center; width: 95%; max-width: 900px; }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            min-width: 180px;
+        }
+
+        input[type="range"] { width: 150px; cursor: pointer; }
+        #sliderInc { accent-color: var(--plus-color); }
+        #sliderDec { accent-color: var(--minus-color); }
+
+        .value-display { font-size: 1.3em; font-weight: bold; }
+        .inc-text { color: var(--plus-color); }
+        .dec-text { color: var(--minus-color); }
+
+        .viz-area {
+            position: relative;
+            height: 380px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.2);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+
+        .price-box {
+            position: relative;
+            width: 200px; /* Redus de la 250 */
+            height: 200px;
+            border: 2px dashed rgba(255,255,255,0.2);
+            transition: all 0.3s ease-out;
+        }
+
+        .base-100 {
+            position: absolute;
+            top: 0; left: 0;
+            width: 200px;
+            height: 200px;
+            background: var(--base-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: rgba(255,255,255,0.8);
+            z-index: 1;
+        }
+
+        #incRect {
+            position: absolute;
+            top: 0; left: 200px;
+            height: 200px;
+            background: var(--plus-color);
+            opacity: 0.5;
+            z-index: 2;
+            border-left: 2px solid var(--plus-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            overflow: hidden;
+            white-space: nowrap;
+            transition: width 0.3s ease-out;
+        }
+
+        #decRect {
+            position: absolute;
+            bottom: 0; left: 0;
+            background: var(--minus-color);
+            opacity: 0.7;
+            z-index: 3;
+            border-top: 2px solid white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            overflow: hidden;
+            transition: height 0.3s ease-out, width 0.3s ease-out;
+        }
+
+        .result-footer {
+            margin-top: 30px;
+            font-size: 1.2em;
+            padding: 20px;
+            border-top: 1px solid #333;
+            width: 100%;
+        }
+
+        .highlight { color: var(--result-color); font-weight: bold; font-size: 1.1em; }
+
+        .youtube-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #FF0000;
+            color: white;
+            text-decoration: none;
+            padding: 12px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: transform 0.2s;
+        }
+        .youtube-btn:hover { transform: scale(1.05); }
+
+        a.back-btn {
+            align-self: flex-start;
+            color: #888;
+            text-decoration: none;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+        a.back-btn:hover { color: white; }
+    </style>
+</head>
+<body>
+
+<a href="index.html" class="back-btn">← Înapoi la Portofoliu</a>
+
+<div class="container">
+    <div class="controls">
+        <div class="control-group">
+            <label class="inc-text">Scumpire (x%)</label>
+            <div class="value-display inc-text" id="valInc">+25%</div>
+            <input type="range" id="sliderInc" min="0" max="100" value="25">
+        </div>
+        <div class="control-group">
+            <label class="dec-text">Ieftinire (y%)</label>
+            <div class="value-display dec-text" id="valDec">-20%</div>
+            <input type="range" id="sliderDec" min="0" max="100" value="20">
+        </div>
+    </div>
+
+    <div class="viz-area">
+        <div class="price-box" id="mainBox">
+            <div class="base-100">100%</div>
+            <div id="incRect"></div>
+            <div id="decRect"></div>
+        </div>
+    </div>
+
+    <div class="result-footer" id="resultText">
+        Preț final: <span class="highlight">100%</span> din cel inițial. <br>
+        Variație netă: <span class="highlight">0%</span>
+    </div>
+
+    <a href="https://www.youtube.com/@repescov" target="_blank" class="youtube-btn">
+        <svg width="24" height="24" fill="white" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
+        Vezi explicația video pe YouTube
+    </a>
+</div>
+
+<script>
+    const sliderInc = document.getElementById('sliderInc');
+    const sliderDec = document.getElementById('sliderDec');
+    const incRect = document.getElementById('incRect');
+    const decRect = document.getElementById('decRect');
+    const mainBox = document.getElementById('mainBox');
+    const resultText = document.getElementById('resultText');
+
+    const BASE_SIZE = 200;
+
+    function update() {
+        const x = parseInt(sliderInc.value);
+        const y = parseInt(sliderDec.value);
+
+        document.getElementById('valInc').innerText = `+${x}%`;
+        document.getElementById('valDec').innerText = `-${y}%`;
+
+        const factorInc = 1 + (x / 100);
+        const factorDec = 1 - (y / 100);
+        const finalPrice = factorInc * factorDec * 100;
+        const variation = finalPrice - 100;
+
+        const extraWidth = BASE_SIZE * (x / 100);
+        incRect.style.width = extraWidth + 'px';
+        incRect.innerText = x > 15 ? `+${x}%` : "";
+        
+        const cutHeight = BASE_SIZE * (y / 100);
+        decRect.style.height = cutHeight + 'px';
+        decRect.style.width = (BASE_SIZE + extraWidth) + 'px';
+        decRect.innerText = y > 15 ? `-${y}%` : "";
+        
+        mainBox.style.width = (BASE_SIZE + extraWidth) + 'px';
+
+        const resValue = finalPrice.toLocaleString('ro-RO', { maximumFractionDigits: 2 });
+        const varValue = variation.toLocaleString('ro-RO', { maximumFractionDigits: 2 });
+        
+        const sign = variation > 0.001 ? "+" : "";
+        const colorClass = variation > 0.001 ? "inc-text" : (variation < -0.001 ? "dec-text" : "highlight");
+
+        resultText.innerHTML = `
+            Preț final: <span class="highlight">${resValue}%</span> din cel inițial. <br>
+            Variație netă: <span class="${colorClass}">${sign}${varValue}%</span> <br>
+            <small style="color:#666; font-size: 0.8em; font-family:serif; font-style:italic;">
+                Calcul: ${x} - ${y} + (${x} &cdot; (-${y})) / 100 = ${varValue}%
+            </small>
+        `;
+    }
+
+    sliderInc.addEventListener('input', update);
+    sliderDec.addEventListener('input', update);
+    update();
+</script>
+
+</body>
+</html>
